@@ -132,7 +132,136 @@
     </div>
   </div>
 
-  <script>
+  <!-- ... Keep your existing HTML and CSS ... -->
+
+<script>
+  // Replace 'YOUR_BACKEND_URL_HERE' with your deployed backend URL, e.g. https://backend-service-xxxx.a.run.app
+  const backendUrl = 'https://career-472010.el.r.appspot.com';
+
+  function renderList(items) {
+    if (!Array.isArray(items) || items.length === 0) return "";
+    return `<ul class="list-disc list-inside space-y-1 text-gray-600 text-sm mb-4">
+      ${items.map(item => `<li>${item}</li>`).join('')}
+    </ul>`;
+  }
+
+  document.getElementById('recommendBtn').addEventListener('click', async function () {
+    const interests = document.getElementById('interests').value || '';
+    const education = document.getElementById('education').value || '';
+    const aptitude = document.getElementById('aptitude').value || '';
+
+    const btn = document.getElementById('recommendBtn');
+    const btnText = document.getElementById('btnText');
+    const section = document.getElementById('recommendationSection');
+
+    btn.disabled = true;
+    btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+    btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+    btnText.innerHTML = `
+      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block align-middle" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Generating...`;
+
+    try {
+      const res = await fetch(`${backendUrl}/api/recommendation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interests, education, aptitude }),
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch recommendation');
+
+      const result = await res.json();
+
+      const recommendedCareer = result.recommended_career || 'Career';
+      const explanation = result.explanation || '';
+      const roadmap = result.roadmap || [];
+      const marketValue = result.market_value || [];
+      const packages = result.packages || [];
+      const companies = Array.isArray(result.companies) ? result.companies : [];
+      const requiredSkills = Array.isArray(result.required_skills) ? result.required_skills : [];
+      const courseGuidance = Array.isArray(result.course_guidance) ? result.course_guidance : [];
+
+      const html = `
+        <h3 class="text-xl font-bold text-indigo-700 mb-2">${recommendedCareer}</h3>
+        ${explanation ? `<p class="text-sm text-gray-600 mb-4">${explanation}</p>` : ''}
+
+        ${roadmap.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Step-by-Step Roadmap:</h4>` + renderList(roadmap) : ''}
+
+        ${(marketValue.length || packages.length) ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Market Value & Packages:</h4>` + renderList([...marketValue, ...packages]) : ''}
+
+        ${companies.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Top Companies Hiring:</h4>
+        <ul class="list-disc list-inside space-y-1 text-gray-600 text-sm mb-4">
+          ${companies.map(c => `<li><span class="important">${c.name}</span> (${c.type})</li>`).join('')}
+        </ul>` : ''}
+
+        ${requiredSkills.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Key Skills Required:</h4>` + renderList(requiredSkills) : ''}
+
+        ${courseGuidance.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Recommended Learning Resources:</h4>
+        <ul class="list-disc list-inside space-y-1 text-gray-600 text-sm mb-4">
+          ${courseGuidance.map(course => `<li><a href="${course.link}" target="_blank" rel="noopener" class="text-indigo-600 hover:underline">${course.title} - ${course.platform} (${course.paid_or_free})</a></li>`).join('')}
+        </ul>` : ''}
+
+        <p class="text-xs text-gray-400 italic">
+          *This recommendation is AI-generated and personalized based on your inputs.
+        </p>
+      `;
+
+      section.innerHTML = html;
+    } catch (err) {
+      section.innerHTML = `<p class="text-red-600">Error: ${err.message}</p>`;
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+      btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+      btnText.textContent = 'Get My Career Path';
+    }
+  });
+
+  // Chatbot code with backend URL update
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+  const clearChatBtn = document.getElementById('clearChatBtn');
+
+  chatInput.addEventListener('keydown', async (event) => {
+    if (event.key === 'Enter' && chatInput.value.trim() !== '') {
+      const userMsg = chatInput.value.trim();
+      appendMessage('user', userMsg);
+      chatInput.value = '';
+
+      try {
+        const res = await fetch(`${backendUrl}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMsg }),
+        });
+
+        if (!res.ok) throw new Error('Chat API error');
+        const data = await res.json();
+        appendMessage('ai', data.reply);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } catch (err) {
+        appendMessage('ai', 'Sorry, could not get a response.');
+      }
+    }
+  });
+
+  clearChatBtn.addEventListener('click', () => {
+    chatMessages.innerHTML = '';
+  });
+
+  function appendMessage(sender, msg) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('chat-message', sender);
+    msgDiv.textContent = (sender === 'user' ? 'You: ' : 'AI: ') + msg;
+    chatMessages.appendChild(msgDiv);
+  }
+</script>
+
+
+  <!-- <script>
     function renderList(items) {
       if (!Array.isArray(items) || items.length === 0) return "";
       return `<ul class="list-disc list-inside space-y-1 text-gray-600 text-sm mb-4">
@@ -255,6 +384,6 @@
       chatMessages.appendChild(msgDiv);
     }
     // ----------------------------------------
-  </script>
+  </script> -->
 </body>
 </html>
