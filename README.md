@@ -58,17 +58,13 @@ Deployment (Cloud Run/App Engine)
 
 ├── backend/
 
-│   ├── main.py
+│   ├── app.py
 
 │   ├── requirements.txt
 
 ├── frontend/
 
-│   ├── index.html
-
-│   ├── styles.css
-
-│   ├── app.js
+│   ├── index.html(Tailwind,js)
 
 ├── deploy/
 
