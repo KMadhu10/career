@@ -17,7 +17,6 @@ def ensure_list(field):
         return [s.strip() for s in field.split(",") if s.strip()]
     return field
 
-# This is the home route that serves your index.html file.
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -34,9 +33,12 @@ def get_recommendation():
     print(f"User input: Interests={interests}, Education={education}, Aptitude={aptitude}")
 
     try:
-        # The GOOGLE_APPLICATION_CREDENTIALS environment variable is set by Render's Secret File.
-        # The Google client library will automatically find and use this.
-        # We've removed the manual file check which was causing the error.
+        # RENDER ALREADY SETS THE GOOGLE_APPLICATION_CREDENTIALS ENVIRONMENT VARIABLE.
+        # THIS LINE WAS CONFLICTING WITH IT AND CAUSING THE ERROR.
+        # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(
+        #     os.getcwd(), 'gcloud-credentials.json'
+        # )
+
         vertexai.init(project='career-472010', location='us-central1')
         model = GenerativeModel("gemini-2.5-flash")
 
@@ -115,8 +117,9 @@ def chat():
     user_message = data.get('message', '')
 
     try:
-        # Credentials will be handled automatically by Google client library.
-        # Removed the manual file check that was causing the error.
+        # RENDER ALREADY SETS THE GOOGLE_APPLICATION_CREDENTIALS ENVIRONMENT VARIABLE.
+        # THE PREVIOUS CODE WAS CONFLICTING WITH IT AND CAUSING THE ERROR.
+
         vertexai.init(project='career-472010', location='us-central1')
         model = GenerativeModel("gemini-2.5-flash")
 
