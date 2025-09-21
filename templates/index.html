@@ -161,6 +161,8 @@
     </div>
   </div>
   <script>
+    const API_URL = 'https://career-jkg1.onrender.com';
+
     document.getElementById('recommendBtn').addEventListener('click', async function () {
       const interests = document.getElementById('interests').value || '';
       const education = document.getElementById('education').value || '';
@@ -178,12 +180,15 @@
         </svg>
         Generating...`;
       try {
-        const res = await fetch('http://127.0.0.1:5000/api/recommendation', {
+        const res = await fetch(`${API_URL}/api/recommendation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ interests, education, aptitude }),
         });
-        if (!res.ok) throw new Error('Failed to fetch recommendation');
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Failed to fetch recommendation: ${res.status} ${errorText}`);
+        }
         const result = await res.json();
         const recommendedCareer = result.recommended_career || 'Career';
         const explanation = result.explanation || '';
@@ -233,7 +238,6 @@
       document.getElementById('aptitude').value = '';
       chatMessages.innerHTML = '';
     });
-    // No saving/restoring inputs on unload or load to keep fields empty
     // Only chatMessages not saved/restored here
     chatInput.addEventListener('keydown', async event => {
       if (event.key === 'Enter' && !event.shiftKey) {
@@ -244,7 +248,7 @@
           chatInput.value = '';
           showTypingIndicator(true);
           try {
-            const res = await fetch('http://127.0.0.1:5000/api/chat', {
+            const res = await fetch(`${API_URL}/api/chat`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ message: userMsg }),
