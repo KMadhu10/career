@@ -1,7 +1,7 @@
 import os
 import re
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
 import vertexai
@@ -17,10 +17,11 @@ def ensure_list(field):
         return [s.strip() for s in field.split(",") if s.strip()]
     return field
 
-# This part is now handled by the frontend.
-# @app.route('/')
-# def home():
-#     return "Backend server is running! The API is ready at /api/recommendation"
+# This is the home route that serves your index.html file.
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 
 @app.route('/api/recommendation', methods=['POST'])
 def get_recommendation():
