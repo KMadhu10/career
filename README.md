@@ -55,16 +55,27 @@ Deployment (Cloud Run/App Engine)
 ## Folder Structure
 
 
+
 ├── backend/
+
 │   ├── main.py
+
 │   ├── requirements.txt
+
 ├── frontend/
+
 │   ├── index.html
+
 │   ├── styles.css
+
 │   ├── app.js
+
 ├── deploy/
+
 │   ├── Dockerfile
+
 │   ├── cloud_run.yaml
+
 ├── README.md
 
 
