@@ -27,10 +27,7 @@ Deployment (Cloud Run/App Engine)
 
 ## Setup Instructions
 
-1. Clone the repository
-   
-   git clone https://github.com/KMadhu10/career-goals-app.git
-   
+1. Arranging the all necessary files with the proper structure and api initiations with the required imports
 
 2. Install dependencies
    
