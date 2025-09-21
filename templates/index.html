@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Personalized Career & Skills Advisor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+  <style>
+    .important {
+      font-weight: bold;
+      font-style: italic;
+      font-family: cursive;
+    }
+    #chatWidget {
+      background-color: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      max-width: 400px;
+      height: 320px;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    #chatMessages {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-bottom: 0.5rem;
+      scroll-behavior: smooth;
+    }
+    .chat-message {
+      margin-bottom: 0.75rem;
+      opacity: 0;
+      animation: fadeIn 0.4s forwards;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    .chat-message.user {
+      justify-content: flex-end;
+      color: #111827;
+    }
+    .chat-message.user .bubble {
+      background-color: #3b82f6;
+      color: white;
+      border-radius: 16px 16px 0 16px;
+      padding: 8px 14px;
+      max-width: 70%;
+    }
+    .chat-message.ai {
+      justify-content: flex-start;
+      color: #111827;
+    }
+    .chat-message.ai .bubble {
+      background-color: #e5e7eb;
+      color: #111827;
+      border-radius: 16px 16px 16px 0;
+      padding: 8px 14px;
+      max-width: 70%;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .avatar.user {
+      background-color: #2563eb; /* Blue */
+    }
+    .avatar.ai {
+      background-color: #9ca3af; /* Gray */
+    }
+    #chatInput {
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      resize: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #typingIndicator {
+      font-style: italic;
+      color: #6b7280;
+      height: 1.5rem;
+      margin-bottom: 0.5rem;
+      min-height: 1.5rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4" >
+  <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+        Personalized Career & Skills Advisor
+      </h1>
+      <p class="text-gray-500">
+        A guide to help Indian students navigate the evolving job market.
+      </p>
+    </div>
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Input Form -->
+      <div class="space-y-6">
+        <h2 class="text-2xl font-semibold text-gray-800">Your Profile</h2>
+        <div>
+          <label for="interests" class="block text-sm font-medium text-gray-700">
+            Interests (e.g., technology, arts, science)
+          </label>
+          <input
+            type="text" id="interests" placeholder="e.g., AI, data analysis, creative writing"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+        <div>
+          <label for="education" class="block text-sm font-medium text-gray-700">
+            Highest Qualification
+          </label>
+          <input
+            type="text" id="education" placeholder="e.g., B.Tech in Computer Science, B.A. in Economics"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+        <div>
+          <label for="aptitude" class="block text-sm font-medium text-gray-700">
+            Aptitude (e.g., logical reasoning, creative thinking)
+          </label>
+          <input
+            type="text" id="aptitude" placeholder="e.g., strong analytical skills, good communication"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          />
+        </div>
+        <button
+          id="recommendBtn"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <span id="btnText">Get My Career Path</span>
+        </button>
+        <!-- Added Chat Widget -->
+        <div id="chatWidget" aria-label="Chatbot" role="region" aria-live="polite">
+          <div id="chatMessages" aria-live="polite" aria-atomic="false" aria-relevant="additions"></div>
+          <div id="typingIndicator" aria-live="assertive" aria-atomic="true"></div>
+          <textarea id="chatInput" placeholder="Ask me about your career plan..." rows="2" aria-label="Chat input"></textarea>
+          <button id="clearChatBtn" class="mt-2 px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Clear Chat</button>
+        </div>
+      </div>
+      <!-- Output Section -->
+      <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 overflow-y-auto" style="max-height: 600px;">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Personalized Plan</h2>
+        <div id="recommendationSection" class="text-gray-700 italic">
+          Enter your details and click the button to get a personalized career recommendation.
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById('recommendBtn').addEventListener('click', async function () {
+      const interests = document.getElementById('interests').value || '';
+      const education = document.getElementById('education').value || '';
+      const aptitude = document.getElementById('aptitude').value || '';
+      const btn = document.getElementById('recommendBtn');
+      const btnText = document.getElementById('btnText');
+      const section = document.getElementById('recommendationSection');
+      btn.disabled = true;
+      btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+      btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      btnText.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block align-middle" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Generating...`;
+      try {
+        // --- THIS LINE IS THE FIX ---
+        const res = await fetch('/api/recommendation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ interests, education, aptitude }),
+        });
+        if (!res.ok) throw new Error('Failed to fetch recommendation');
+        const result = await res.json();
+        const recommendedCareer = result.recommended_career || 'Career';
+        const explanation = result.explanation || '';
+        const roadmap = result.roadmap || [];
+        const marketValue = result.market_value || [];
+        const packages = result.packages || [];
+        const companies = Array.isArray(result.companies) ? result.companies : [];
+        const requiredSkills = Array.isArray(result.required_skills) ? result.required_skills : [];
+        const courseGuidance = Array.isArray(result.course_guidance) ? result.course_guidance : [];
+        const html = `
+          <h3 class="text-xl font-bold text-indigo-700 mb-2">${recommendedCareer}</h3>
+          ${explanation ? `<p class="text-sm text-gray-600 mb-4">${explanation}</p>` : ''}
+          ${roadmap.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Step-by-Step Roadmap:</h4>` + renderList(roadmap) : ''}
+          ${(marketValue.length || packages.length) ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Market Value & Packages:</h4>` + renderList([...marketValue, ...packages]) : ''}
+          ${companies.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Top Companies Hiring:</h4>
+          <ul class="list-disc list-inside space-y-1 text-gray-600 text-sm mb-4">
+            ${companies.map(c => `<li><span class="important">${c.name}</span> (${c.type})</li>`).join('')}
+          </ul>` : ''}
+          ${requiredSkills.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Key Skills Required:</h4>` + renderList(requiredSkills) : ''}
+          ${courseGuidance.length ? `<h4 class="text-lg font-semibold text-gray-700 mb-2">Recommended Learning Resources:</h4>
+          <ul class="list-disc list-inside space-y-1 text-gray-600 text-sm mb-4">
+            ${courseGuidance.map(course => `<li><a href="${course.link}" target="_blank" rel="noopener" class="text-indigo-600 hover:underline">${course.title} - ${course.platform} (${course.paid_or_free})</a></li>`).join('')}
+          </ul>` : ''}
+          <p class="text-xs text-gray-400 italic">
+            *This recommendation is AI-generated and personalized based on your inputs.
+          </p>
+        `;
+        section.innerHTML = html;
+      } catch (err) {
+        section.innerHTML = `<p class="text-red-600">Error: ${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+        btnText.textContent = 'Get My Career Path';
+      }
+    });
+    // Chatbot JS
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const clearChatBtn = document.getElementById('clearChatBtn');
+    const typingIndicator = document.getElementById('typingIndicator');
+    // Clear inputs on page load (do not restore)
+    window.addEventListener('load', () => {
+      document.getElementById('interests').value = '';
+      document.getElementById('education').value = '';
+      document.getElementById('aptitude').value = '';
+      chatMessages.innerHTML = '';
+    });
+    // No saving/restoring inputs on unload or load to keep fields empty
+    // Only chatMessages not saved/restored here
+    chatInput.addEventListener('keydown', async event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        if (chatInput.value.trim() !== '') {
+          const userMsg = chatInput.value.trim();
+          appendMessage('user', userMsg);
+          chatInput.value = '';
+          showTypingIndicator(true);
+          try {
+            // --- THIS LINE IS THE FIX ---
+            const res = await fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: userMsg }),
+            });
+            if (!res.ok) throw new Error('Chat API error');
+            const data = await res.json();
+            appendMessage('ai', data.reply);
+          } catch (err) {
+            appendMessage('ai', 'Sorry, could not get a response.');
+          } finally {
+            showTypingIndicator(false);
+          }
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+      }
+    });
+    clearChatBtn.addEventListener('click', () => {
+      chatMessages.innerHTML = '';
+    });
+    function appendMessage(sender, msg) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('chat-message', sender);
+      msgDiv.innerHTML = `
+        <div class="avatar ${sender}"></div>
+        <div class="bubble">${msg.replace(/\n/g, '<br>')}</div>
+      `;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    function showTypingIndicator(show) {
+      if (show) {
+        typingIndicator.textContent = 'AI is typing...';
+      } else {
+        typingIndicator.textContent = '';
+      }
+    }
+    function renderList(items) {
+      if (!Array.isArray(items) || items.length === 0) return "";
+      return `<ul class="list-disc list-inside space-y-1 text-gray-600 text-sm mb-4">
+        ${items.map(item => `<li>${item}</li>`).join('')}
+      </ul>`;
+    }
+  </script>
+</body>
+</html>
+
+    
